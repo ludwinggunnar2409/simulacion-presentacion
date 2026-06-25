@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Simulación CNS - Policlínico 32</title>
+
+    <!-- Reveal.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.min.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============================================================
+           RESET & BASE
+           ============================================================ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-deep:    #060d1a;
+            --bg-mid:     #0d1a2d;
+            --bg-card:    rgba(255,255,255,0.045);
+            --bg-card-h:  rgba(255,255,255,0.08);
+            --border:     rgba(255,255,255,0.07);
+            --border-h:   rgba(96,165,250,0.35);
+            --blue:       #3b82f6;
+            --blue-lt:    #60a5fa;
+            --purple:     #a78bfa;
+            --green:      #34d399;
+            --yellow:     #fbbf24;
+            --red:        #f87171;
+            --text-1:     #f1f5f9;
+            --text-2:     #94a3b8;
+            --text-3:     #475569;
+            --grad-a:     linear-gradient(135deg, #60a5fa, #a78bfa);
+            --grad-b:     linear-gradient(135deg, #34d399, #3b82f6);
+            --grad-c:     linear-gradient(135deg, #fbbf24, #f87171);
+        }
+
+        html, body {
+            width: 100%; height: 100%;
+            background: var(--bg-deep);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        /* ============================================================
+           REVEAL OVERRIDES
+           ============================================================ */
+        .reveal { width: 100%; height: 100%; }
+        .reveal .slides { width: 100%; height: 100%; }
+        .reveal .slides section { height: 100vh; }
+
+        /* ============================================================
+           SLIDE WRAPPER
+           ============================================================ */
+        .s {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100vh;
+            padding: 1.4rem 2.8rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Ambient grid bg */
+        .s::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none;
+        }
+
+        /* ============================================================
+           TYPOGRAPHY
+           ============================================================ */
+        .slide-eyebrow {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(0.55rem, 0.8vw, 0.7rem);
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--blue-lt);
+            margin-bottom: 0.55rem;
+        }
+
+        .slide-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(1.6rem, 3.2vw, 2.6rem);
+            font-weight: 700;
+            color: var(--text-1);
+            line-height: 1.15;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .grad-text {
+            background: var(--grad-a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .slide-sub {
+            font-size: clamp(0.75rem, 1.1vw, 0.95rem);
+            color: var(--text-2);
+            text-align: center;
+            line-height: 1.55;
+            max-width: 700px;
+            margin-bottom: 0.6rem;
+        }
+
+        /* ============================================================
+           CARDS
+           ============================================================ */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1rem 1.2rem;
+            transition: border-color 0.25s, background 0.25s, transform 0.25s;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+        .card:hover {
+            border-color: var(--border-h);
+            background: var(--bg-card-h);
+            transform: translateY(-2px);
+        }
+
+        .card-icon {
+            font-size: 1.4rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .card-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(0.75rem, 1.1vw, 0.92rem);
+            font-weight: 600;
+            color: var(--text-1);
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .card-body {
+            font-size: clamp(0.65rem, 0.95vw, 0.8rem);
+            color: var(--text-2);
+            line-height: 1.5;
+        }
+
+        /* Big stat inside card */
+        .stat-num {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 4.5vw, 3.8rem);
+            font-weight: 800;
+            background: var(--grad-a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 0.1rem;
+        }
+
+        /* ============================================================
+           GRIDS
+           ============================================================ */
+        .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; width: 100%; max-width: 1020px; }
+        .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.85rem; width: 100%; max-width: 1020px; }
+        .g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.75rem; width: 100%; max-width: 1020px; }
+
+        @media (max-width: 900px) {
+            .g3, .g4 { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 640px) {
+            .g2, .g3, .g4 { grid-template-columns: 1fr; }
+            .s { padding: 1rem; }
+        }
+
+        /* ============================================================
+           BADGES
+           ============================================================ */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.65rem;
+            border-radius: 99px;
+            font-size: 0.58rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .b-blue   { background: rgba(59,130,246,.15);  color: #60a5fa;  border: 1px solid rgba(59,130,246,.25); }
+        .b-purple { background: rgba(167,139,250,.15); color: #c4b5fd;  border: 1px solid rgba(167,139,250,.25); }
+        .b-green  { background: rgba(52,211,153,.15);  color: #6ee7b7;  border: 1px solid rgba(52,211,153,.25); }
+        .b-yellow { background: rgba(251,191,36,.15);  color: #fde68a;  border: 1px solid rgba(251,191,36,.25); }
+        .b-red    { background: rgba(248,113,113,.15); color: #fca5a5;  border: 1px solid rgba(248,113,113,.25); }
+
+        /* ============================================================
+           ACCENT DIVIDER
+           ============================================================ */
+        .divider {
+            width: 48px;
+            height: 3px;
+            background: var(--grad-a);
+            border-radius: 99px;
+            margin: 0.4rem auto 0.7rem;
+        }
+
+        /* ============================================================
+           HIGHLIGHT NOTE
+           ============================================================ */
+        .note {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(59,130,246,0.07);
+            border: 1px solid rgba(59,130,246,0.18);
+            border-radius: 10px;
+            padding: 0.5rem 1rem;
+            font-size: clamp(0.6rem, 0.85vw, 0.78rem);
+            color: var(--text-2);
+            max-width: 800px;
+        }
+        .note i { color: var(--blue-lt); flex-shrink: 0; }
+
+        /* ============================================================
+           CHART
+           ============================================================ */
+        .chart-wrap {
+            width: 100%;
+            max-width: 860px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1rem;
+            height: 240px;
+        }
+        .chart-wrap canvas { width: 100% !important; height: 100% !important; }
+
+        /* ============================================================
+           PROGRESS BAR
+           ============================================================ */
+        #pbar {
+            position: fixed; top: 0; left: 0; z-index: 9999;
+            height: 2.5px;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #a78bfa, #34d399);
+            transition: width 0.35s ease;
+        }
+
+        /* ============================================================
+           SLIDE-NUMBER PILL
+           ============================================================ */
+        #slide-num {
+            position: fixed; bottom: 1rem; right: 1.2rem; z-index: 9999;
+            font-size: 0.62rem;
+            font-weight: 600;
+            color: var(--text-3);
+            letter-spacing: 0.06em;
+        }
+
+        /* ============================================================
+           COVER SLIDE
+           ============================================================ */
+        .cover-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.2rem, 5.5vw, 4.8rem);
+            font-weight: 800;
+            line-height: 1.05;
+            text-align: center;
+            color: var(--text-1);
+        }
+
+        .cover-sub {
+            font-size: clamp(1rem, 2vw, 1.6rem);
+            font-weight: 500;
+            color: var(--text-2);
+            text-align: center;
+            margin-top: 0.3rem;
+        }
+
+        .tech-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.85rem;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 99px;
+            font-size: 0.68rem;
+            color: var(--text-2);
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .tech-pill:hover { border-color: var(--blue-lt); color: var(--blue-lt); }
+        .tech-pill i { font-size: 0.9rem; }
+
+        .glow-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+            display: inline-block;
+        }
+
+        /* bounce */
+        @keyframes bounce-y {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(6px); }
+        }
+        .bounce { animation: bounce-y 1.8s ease-in-out infinite; }
+
+        /* card accent left border */
+        .card.accent-blue  { border-left: 3px solid var(--blue); }
+        .card.accent-green { border-left: 3px solid var(--green); }
+        .card.accent-yellow{ border-left: 3px solid var(--yellow); }
+        .card.accent-purple{ border-left: 3px solid var(--purple); }
+        .card.accent-red   { border-left: 3px solid var(--red); }
+
+        /* bullet list inside card */
+        .card ul { padding-left: 1.1rem; }
+        .card ul li {
+            font-size: clamp(0.62rem, 0.9vw, 0.78rem);
+            color: var(--text-2);
+            line-height: 1.6;
+        }
+        .card ul li::marker { color: var(--blue-lt); }
+
+        /* reveal controls color */
+        .reveal .controls { color: var(--blue) !important; }
+    </style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div id="pbar"></div>
+<div id="slide-num">1 / 12</div>
+
+<div class="reveal">
+<div class="slides">
+
+<!-- ================================================================
+     SLIDE 1 — PORTADA
+     ================================================================ -->
+<section data-background-color="#060d1a">
+<div class="s" style="gap:0.8rem">
+    <div class="badge b-blue" style="margin-bottom:0.2rem">
+        <span class="glow-dot"></span> SIS 703 · Simulación de Sistemas
+    </div>
+
+    <div class="cover-title">
+        <span class="grad-text">Sistema de Simulación</span><br>
+        <span style="font-size:0.6em;color:var(--text-2)">Policlínico 32 · CNS</span>
+    </div>
+
+    <div class="slide-sub" style="max-width:580px">
+        Modelado de eventos discretos para la optimización<br>
+        de la asignación de fichas médicas
+    </div>
+
+    <!-- Tech pills -->
+    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center;margin:0.4rem 0">
+        <div class="tech-pill"><i class="fa-brands fa-python" style="color:#f7d24f"></i> Python + Salabim</div>
+        <div class="tech-pill"><i class="fa-solid fa-cube" style="color:#22c55e"></i> Panda3D</div>
+        <div class="tech-pill"><i class="fa-brands fa-php" style="color:#7c7fc4"></i> PHP + MySQL</div>
+        <div class="tech-pill"><i class="fa-brands fa-js" style="color:#f7d24f"></i> Chart.js</div>
+        <div class="tech-pill"><i class="fa-solid fa-database" style="color:#60a5fa"></i> Eventos Discretos</div>
+    </div>
+
+    <!-- Authors -->
+    <div style="display:flex;gap:2rem;flex-wrap:wrap;justify-content:center;margin-top:0.3rem">
+        <div style="text-align:center">
+            <div style="font-size:0.72rem;font-weight:700;color:var(--text-1)">Gunnar Ludwing Pecho Vallejos</div>
+            <div style="font-size:0.58rem;color:var(--text-3)">Ingeniería de Sistemas · ULAT</div>
+        </div>
+        <div style="width:1px;background:var(--border)"></div>
+        <div style="text-align:center">
+            <div style="font-size:0.72rem;font-weight:700;color:var(--text-1)">Alexander Jhoel Rodriguez Mejia</div>
+            <div style="font-size:0.58rem;color:var(--text-3)">Ingeniería de Sistemas · ULAT</div>
+        </div>
+    </div>
+
+    <div style="margin-top:0.6rem;font-size:0.6rem;color:var(--text-3)">ULAT · 2026 · Cochabamba, Bolivia</div>
+
+    <div class="bounce" style="margin-top:0.5rem;color:var(--text-3);font-size:0.65rem">
+        <i class="fa-solid fa-chevron-down"></i> Avanza con las flechas o espacio
+    </div>
+</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 2 — PROBLEMÁTICA
+     ================================================================ -->
+<section data-background-color="#060d1a">
+<div class="s" style="gap:0.9rem">
+    <div class="slide-eyebrow">Diagnóstico</div>
+    <div class="slide-title">🔴 Problemática</div>
+    <div class="slide-sub">
+        El Policlínico 32 de la CNS atiende a cientos de pacientes que acuden desde las <strong style="color:var(--text-1)">5:00 AM</strong> para obtener una ficha médica, generando una crisis de gestión diaria.
+    </div>
+    <div class="divider"></div>
+    <div class="g2">
+        <div class="card accent-yellow">
+            <div class="card-icon">⏳</div>
+            <div class="card-title">Esperas Prolongadas</div>
+            <div class="card-body">Los pacientes aguardan más de <strong style="color:var(--yellow)">90 minutos</strong> en promedio para obtener su ficha médica.</div>
+        </div>
+        <div class="card accent-red">
+            <div class="card-icon">🚫</div>
+            <div class="card-title">Pérdida de Pacientes</div>
+            <div class="card-body">El <strong style="color:var(--red)">31%</strong> de los pacientes se retiran sin ficha por agotamiento de cupos disponibles.</div>
+        </div>
+        <div class="card accent-blue">
+            <div class="card-icon">📦</div>
+            <div class="card-title">Recursos Limitados</div>
+            <div class="card-body">Solo <strong style="color:var(--blue-lt)">24 fichas</strong> por especialidad y <strong style="color:var(--blue-lt)">1 ventanilla</strong> para atender toda la demanda diaria.</div>
+        </div>
+        <div class="card accent-purple">
+            <div class="card-icon">👥</div>
+            <div class="card-title">Alta Demanda Matutina</div>
+            <div class="card-body">Pico de <strong style="color:var(--purple)">120 pacientes/hora</strong> entre las 6:00 y 7:00 AM genera colapso inmediato.</div>
+        </div>
+    </div>
+</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 3 — OBJETIVOS
+     ================================================================ -->
+<section data-background-color="#060d1a">
+<div class="s" style="gap:0.9rem">
+    <div class="slide-eyebrow">Propósito</div>
+    <div class="slide-title">🎯 Objetivos</div>
+    <div class="divider"></div>
+    <div class="g2">
+        <div class="card" style="border:1px solid rgba(167,139,250,0.3);background:rgba(167,139,250,0.06)">
+            <div class="badge b-purple" style="width:fit-content">Objetivo General</div>
+            <div class="card-title" style="margin-top:0.4rem;font-size:0.85rem">Modelar el Sistema de Fichas</div>
+            <div class="card-body">Desarrollar un sistema de simulación de eventos discretos para la asignación de fichas en el Policlínico 32 de la CNS, permitiendo evaluar políticas y escenarios de mejora.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.75rem">
+            <div class="card accent-blue">
+                <div class="card-title"><span class="badge b-blue">Específico 1</span> Simulador Base</div>
+                <div class="card-body">Implementar en <strong style="color:var(--blue-lt)">Python + Salabim</strong> con distribuciones probabilísticas realistas y políticas de prioridad.</div>
+            </div>
+            <div class="card accent-green">
+                <div class="card-title"><span class="badge b-green">Específico 2</span> Visualización 3D</div>
+                <div class="card-body">Crear una interfaz gráfica con <strong style="color:var(--green)">Panda3D</strong> que reproduzca la simulación en tiempo real con controles interactivos.</div>
+            </div>
+            <div class="card accent-yellow">
+                <div class="card-title"><span class="badge b-yellow">Específico 3</span> Dashboard Web</div>
+                <div class="card-body">Implementar interfaz web con <strong style="color:var(--yellow)">PHP + MySQL</strong> para configuración de escenarios y análisis de resultados.</div>
+            </div>
+        </div>
+    </div>
+</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 4 — ARQUITECTURA
+     ================================================================ -->
+<section data-background-color="#060d1a">
+<div class="s" style="gap:0.9rem">
+    <div class="slide-eyebrow">Diseño Técnico</div>
+    <div class="slide-title">🏗️ Arquitectura del Sistema</div>
+    <div class="divider"></div>
+    <div class="g3">
+        <div class="card text-center" style="align-items:center;background:rgba(59,130,246,0.06);border-color:rgba(59,130,246,0.2)">
+            <div style="font-size:2.8rem;margin-bottom:0.3rem">🐍</div>
+            <div class="card-title">Simulador Base</div>
+            <div class="card-body" style="text-align:center">Python + Salabim<br>Eventos Discretos<br>Distribuciones Prob.</div>
+        </div>
+        <div class="card text-center" style="align-items:center;background:rgba(52,211,153,0.06);border-color:rgba(52,211,153,0.2)">
+            <div style="font-size:2.8rem;margin-bottom:0.3rem">🎮</div>
+            <div class="card-title">Visualizador 3D</div>
+            <div class="card-body" style="text-align:center">Python + Panda3D<br>Tiempo real<br>Controles interactivos</div>
+        </div>
+        <div class="card text-center" style="align-items:center;background:rgba(251,191,36,0.06);border-color:rgba(251,191,36,0.2)">
+            <div style="font-size:2.8rem;margin-bottom:0.3rem">🌐</div>
+            <div class="card-title">Dashboard Web</div>
+            <div class="card-body" style="text-align:center">PHP + MySQL<br>Configuración<br>Reportes y análisis</div>
+        </div>
+    </div>
+    <div style="display:flex;gap:0.5rem;align-items:center;margin-top:0.3rem">
+        <div style="flex:1;height:2px;background:var(--border)"></div>
+        <div class="note" style="flex-shrink:0">
+            <i class="fa-solid fa-arrows-left-right"></i>
+            Los tres módulos se comunican mediante archivos <strong style="color:var(--blue-lt)">JSON</strong> como protocolo de intercambio
+        </div>
+        <div style="flex:1;height:2px;background:var(--border)"></div>
+    </div>
+    <!-- Flow diagram -->
+    <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.68rem;color:var(--text-2);flex-wrap:wrap;justify-content:center">
+        <span style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:0.3rem 0.7rem">Salabim corre simulación</span>
+        <i class="fa-solid fa-arrow-right" style="color:var(--text-3)"></i>
+        <span style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:0.3rem 0.7rem">Exporta JSON</span>
+        <i class="fa-solid fa-arrow-right" style="color:var(--text-3)"></i>
+        <span style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);border-radius:8px;padding:0.3rem 0.7rem">Panda3D reproduce</span>
+        <i class="fa-solid fa-arrow-right" style="color:var(--text-3)"></i>
+        <span style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:8px;padding:0.3rem 0.7rem">PHP lee & analiza</span>
+    </div>
+</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 5 — PARÁMETROS
+     ================================================================ -->
+<section data-background-color="#060d1a">
+<div class="s" style="gap:0.9rem">
+    <div class="slide-eyebrow">Modelado</div>
+    <div class="slide-title">⚙️ Parámetros del Modelo</div>
+    <div class="divider"></div>
+    <div class="g2">
+        <div class="card accent-blue">
+            <div class="card-title"><i class="fa-solid fa-ticket" style="color:var(--blue-lt)"></i> Fichas por Especialidad</div>
+            <div style="margin-top:0.4rem;display:flex;gap:0.35rem;flex-wrap:wrap">
+                <span class="badge b-blue">Medicina General</span>
+                <span class="badge b-blue">Pediatría</span>
+                <span class="badge b-blue">Ginecología</span>
+                <span class="badge b-blue">Traumatología</span>
+            </div>
+            <div class="card-body" style="margin-top:0.4rem"><strong style="color:var(--blue-lt)">24 fichas</strong> por especialidad · Se reparten desde las 7:00 AM</div>
+        </div>
+        <div class="card accent-yellow">
+            <div class="card-title"><i class="fa-solid fa-person-walking" style="color:var(--yellow)"></i> Distribución de Llegadas</div>
+            <div class="card-body">
+                Proceso de <strong style="color:var(--yellow)">Poisson no homogéneo</strong><br>
+                Pico: <strong style="color:var(--yellow)">120 pac/hora</strong> (6:00–7:00 AM)<br>
+                Apertura desde: <strong>5:00 AM</strong>
+            </div>
+        </div>
+        <div class="card accent-green">
+            <div class="card-title"><i class="fa-solid fa-stopwatch" style="color:var(--green)"></i> Tiempo de Atención</div>
+            <div class="card-body">
+                Distribución <strong style="color:var(--green)">Lognormal</strong><br>
+                Media: <strong>1.2 min</strong> · Desviación: <strong>0.5 min</strong><br>
+                Incluye verificación de asegurado
+            </div>
+        </div>
+        <div class="card accent-purple">
+            <div class="card-title"><i class="fa-solid fa-medal" style="color:var(--purple)"></i> Política de Prioridad</div>
+            <div class="card-body">
+                <span style="color:var(--red)">① Preferencial</span> · 10% de pacientes<br>
+                <span style="color:var(--yellow)">② Tercera Edad</span> · 20% de pacientes<br>
+                <span style="color:var(--text-2)">③ General</span> · 70% de pacientes
+            </div>
+        </div>
+    </div>
+</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 6 — RESULTADOS
+     ================================================================ -->
+<section data-background-color="#060d1a">
+<div class="s" style="gap:0.9rem">
+    <div class="slide-eyebrow">Hallazgos</div>
+    <div class="slide-title">📊 Resultados de la Simulación</div>
+    <div class="slide-sub">Escenario base: 1 ventanilla · Jornada matutina completa</div>
+    <div class="divider"></div>
+    <div class="g4">
+        <div class="card text-center" style="align-items:center">
+            <div class="stat-num">55</div>
+            <div class="card-title" style="justify-content:center">Atendidos</div>
+            <div class="card-body" style="text-align:center;font-size:0.62rem">promedio con<br>1 ventanilla</div>
+        </div>
+        <div class="card text-center" style="align-items:center">
+            <div class="stat-num" style="background:var(--grad-c);-webkit-background-clip:text;-webkit-text-fill-color:transparent">31%</div>
+            <div class="card-title" style="justify-content:center">Sin ficha</div>
+            <div class="card-body" style="text-align:center;font-size:0.62rem">3 de cada 10<br>se van sin atención</div>
+        </div>
+        <div class="card text-center" style="align-items:center">
+            <div class="stat-num" style="background:var(--grad-c);-webkit-background-clip:text;-webkit-text-fill-color:transparent">72.9</div>
+            <div class="card-title" style="justify-content:center">Min de espera</div>
+            <div class="card-body" style="text-align:center;font-size:0.62rem">más de una hora<br>en promedio</div>
+        </div>
+        <div class="card text-center" style="align-items:center">
+            <div class="stat-num">92.4%</div>
+            <div class="card-title" style="justify-content:center">Utilización</div>
+            <div class="card-body" style="text-align:center;font-size:0.62rem">ventanilla ocupada<br>casi toda la jornada</div>
+        </div>
+    </div>
+    <div class="note">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        El sistema opera en <strong style="color:var(--red)">estado de saturación</strong>: cualquier incremento en la demanda colapsa inmediatamente la cola.
+    </div>
+</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 7 — GRÁFICO COMPARATIVO
+     ================================================================ -->
+<section data-background-color="#060d1a">
+<div class="s" style="gap:0.8rem">
+    <div class="slide-eyebrow">Análisis de Escenarios</div>
+    <div class="slide-title">📈 Comparativa de Escenarios</div>
+    <div class="divider"></div>
+    <div class="chart-wrap">
+        <canvas id="comparativeChart"></canvas>
+    </div>
+    <div class="g3" style="max-width:860px">
+        <div class="card text-center" style="align-items:center;background:rgba(59,130,246,0.06);border-color:rgba(59,130,246,0.2)">
+            <span class="badge b-blue">Escenario Base</span>
+            <div class="card-body" style="margin-top:0.3rem">1 ventanilla<br><strong style="color:var(--text-1)">55 atendidos</strong><br>72.9 min espera</div>
+        </div>
+        <div class="card text-center" style="align-items:center;background:rgba(248,113,113,0.06);border-color:rgba(248,113,113,0.2)">
+            <span class="badge b-red">Con Fallas</span>
+            <div class="card-body" style="margin-top:0.3rem">1 ventanilla c/fallas<br><strong style="color:var(--text-1)">51 atendidos</strong><br>+17% tiempo espera</div>
+        </div>
+        <div class="card text-center" style="align-items:center;background:rgba(52,211,153,0.06);border-color:rgba(52,211,153,0.2)">
+            <span class="badge b-green">2 Ventanillas</span>
+            <div class="card-body" style="margin-top:0.3rem">óptimo propuesto<br><strong style="color:var(--text-1)">72 atendidos</strong><br>−47% tiempo espera</div>
+        </div>
+    </div>
+</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 8 — VALIDACIÓN
+     ================================================================ -->
+<section data-background-color="#060d1a">
+<div class="s" style="gap:0.9rem">
+    <div class="slide-eyebrow">Calidad del Modelo</div>
+    <div class="slide-title">✅ Validación del Modelo</div>
+    <div class="divider"></div>
+    <div class="g2">
+        <div class="card accent-blue">
+            <div class="card-title"><i class="fa-solid fa-comments" style="color:var(--blue-lt)"></i> Validación Conceptual</div>
+            <div class="card-body">Revisión con personal administrativo y médico del Policlínico 32 que <strong style="color:var(--text-1)">confirmó</strong> la dinámica de llegada, el proceso de asignación de fichas y las políticas de prioridad implementadas.</div>
+        </div>
+        <div class="card accent-green">
+            <div class="card-title"><i class="fa-solid fa-chart-bar" style="color:var(--green)"></i> Validación Operacional</div>
+            <div class="card-body">
+                Comparación con datos reales observados:<br>
+                <span style="color:var(--green)">✓</span> <strong>55 atendidos</strong> vs 50–60 reales<br>
+                <span style="color:var(--green)">✓</span> <strong>73 min espera</strong> vs 60–90 min reales<br>
+                <span style="color:var(--green)">✓</span> Error relativo &lt; 12%
+            </div>
+        </div>
+    </div>
+    <div class="note">
+        <i class="fa-solid fa-vial"></i>
+        <strong style="color:var(--text-1)">107 pruebas automatizadas</strong> (pytest) verifican la correcta ejecución del modelo en todos los escenarios configurables.
+    </div>
+    <!-- mini stats row -->
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:0.2rem">
+        <div style="text-align:center">
+            <div style="font-size:1.4rem;font-weight:800;color:var(--green)">107</div>
+            <div style="font-size:0.6rem;color:var(--text-3)">Tests pytest</div>
+        </div>
+        <div style="width:1px;background:var(--border)"></div>
+        <div style="text-align:center">
+            <div style="font-size:1.4rem;font-weight:800;color:var(--blue-lt)">100%</div>
+            <div style="font-size:0.6rem;color:var(--text-3)">Tasa de éxito</div>
+        </div>
+        <div style="width:1px;background:var(--border)"></div>
+        <div style="text-align:center">
+            <div style="font-size:1.4rem;font-weight:800;color:var(--yellow)">&lt;12%</div>
+            <div style="font-size:0.6rem;color:var(--text-3)">Error relativo</div>
+        </div>
+        <div style="width:1px;background:var(--border)"></div>
+        <div style="text-align:center">
+            <div style="font-size:1.4rem;font-weight:800;color:var(--purple)">3</div>
+            <div style="font-size:0.6rem;color:var(--text-3)">Escenarios validados</div>
+        </div>
+    </div>
+</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 9 — HERRAMIENTAS
+     ================================================================ -->
+<section data-background-color="#060d1a">
+<div class="s" style="gap:0.9rem">
+    <div class="slide-eyebrow">Stack Tecnológico</div>
+    <div class="slide-title">🛠️ Herramientas Utilizadas</div>
+    <div class="divider"></div>
+    <div class="g3">
+        <div class="card" style="background:rgba(247,210,79,0.05);border-color:rgba(247,210,79,0.2)">
+            <div style="font-size:2.2rem">🐍</div>
+            <div class="card-title">Python</div>
+            <div style="margin-top:0.4rem;display:flex;flex-direction:column;gap:0.25rem">
+                <div class="card-body"><i class="fa-solid fa-circle-dot" style="color:var(--yellow);font-size:0.5rem;margin-right:0.4rem"></i><strong>Salabim</strong> — Motor de simulación DES</div>
+                <div class="card-body"><i class="fa-solid fa-circle-dot" style="color:var(--yellow);font-size:0.5rem;margin-right:0.4rem"></i><strong>Panda3D</strong> — Visualización 3D</div>
+                <div class="card-body"><i class="fa-solid fa-circle-dot" style="color:var(--yellow);font-size:0.5rem;margin-right:0.4rem"></i><strong>Pandas + NumPy</strong> — Análisis estadístico</div>
+                <div class="card-body"><i class="fa-solid fa-circle-dot" style="color:var(--yellow);font-size:0.5rem;margin-right:0.4rem"></i><strong>pytest</strong> — Testing automatizado</div>
+            </div>
+        </div>
+        <div class="card" style="background:rgba(124,127,196,0.05);border-color:rgba(124,127,196,0.2)">
+            <div style="font-size:2.2rem">🐘</div>
+            <div class="card-title">PHP + MySQL</div>
+            <div style="margin-top:0.4rem;display:flex;flex-direction:column;gap:0.25rem">
+                <div class="card-body"><i class="fa-solid fa-circle-dot" style="color:var(--purple);font-size:0.5rem;margin-right:0.4rem"></i><strong>PHP 8.2</strong> — Backend del dashboard</div>
+                <div class="card-body"><i class="fa-solid fa-circle-dot" style="color:var(--purple);font-size:0.5rem;margin-right:0.4rem"></i><strong>MySQL</strong> — Persistencia de escenarios</div>
+                <div class="card-body"><i class="fa-solid fa-circle-dot" style="color:var(--purple);font-size:0.5rem;margin-right:0.4rem"></i><strong>API REST</strong> — Comunicación JSON</div>
+                <div class="card-body"><i class="fa-solid fa-circle-dot" style="color:var(--purple);font-size:0.5rem;margin-right:0.4rem"></i><strong>SSE</strong> — Actualizaciones en tiempo real</div>
+            </div>
+        </div>
+        <div class="card" style="background:rgba(59,130,246,0.05);border-color:rgba(59,130,246,0.2)">
+            <div style="font-size:2.2rem">⚛️</div>
+            <div class="card-title">JavaScript</div>
+            <div style="margin-top:0.4rem;display:flex;flex-direction:column;gap:0.25rem">
+                <div class="card-body"><i class="fa-solid fa-circle-dot" style="color:var(--blue-lt);font-size:0.5rem;margin-right:0.4rem"></i><strong>Chart.js v4</strong> — Gráficos interactivos</div>
+                <div class="card-body"><i class="fa-solid fa-circle-dot" style="color:var(--blue-lt);font-size:0.5rem;margin-right:0.4rem"></i><strong>Bootstrap 5</strong> — UI del dashboard</div>
+                <div class="card-body"><i class="fa-solid fa-circle-dot" style="color:var(--blue-lt);font-size:0.5rem;margin-right:0.4rem"></i><strong>GSAP</strong> — Animaciones</div>
+                <div class="card-body"><i class="fa-solid fa-circle-dot" style="color:var(--blue-lt);font-size:0.5rem;margin-right:0.4rem"></i><strong>PWA</strong> — Acceso offline</div>
+            </div>
+        </div>
+    </div>
+</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 10 — CONCLUSIONES
+     ================================================================ -->
+<section data-background-color="#060d1a">
+<div class="s" style="gap:0.9rem">
+    <div class="slide-eyebrow">Cierre</div>
+    <div class="slide-title">💡 Conclusiones</div>
+    <div class="divider"></div>
+    <div class="g2">
+        <div class="card accent-green">
+            <div class="card-title"><i class="fa-solid fa-trophy" style="color:var(--green)"></i> Logros Alcanzados</div>
+            <ul style="margin-top:0.5rem">
+                <li>Modelo completo de asignación de fichas con prioridad</li>
+                <li>Simulador funcional con Salabim (3 escenarios)</li>
+                <li>Visualización 3D interactiva con Panda3D</li>
+                <li>Dashboard web PHP para configuración y análisis</li>
+                <li>107 pruebas automatizadas con 100% de éxito</li>
+                <li>Validación con datos reales del Policlínico 32</li>
+            </ul>
+        </div>
+        <div class="card accent-blue">
+            <div class="card-title"><i class="fa-solid fa-book-open" style="color:var(--blue-lt)"></i> Aprendizajes Clave</div>
+            <ul style="margin-top:0.5rem">
+                <li>Simulación de eventos discretos (DES)</li>
+                <li>Teoría de colas M/M/c aplicada a salud</li>
+                <li>Distribuciones probabilísticas (Poisson, Lognormal)</li>
+                <li>Integración Python ↔ PHP mediante JSON</li>
+                <li>Visualización 3D para sistemas de colas</li>
+                <li>Validación estadística de modelos de simulación</li>
+            </ul>
+        </div>
+    </div>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:center;margin-top:0.2rem">
+        <span class="badge b-purple">CNS</span>
+        <span class="badge b-blue">Salud Pública</span>
+        <span class="badge b-green">Simulación DES</span>
+        <span class="badge b-yellow">Teoría de Colas</span>
+        <span class="badge b-red">Optimización</span>
+    </div>
+</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 11 — RECOMENDACIONES
+     ================================================================ -->
+<section data-background-color="#060d1a">
+<div class="s" style="gap:0.9rem">
+    <div class="slide-eyebrow">Propuesta de Mejora</div>
+    <div class="slide-title">🚀 Recomendaciones</div>
+    <div class="divider"></div>
+    <div class="g2">
+        <div class="card accent-green">
+            <div class="card-title"><i class="fa-solid fa-door-open" style="color:var(--green)"></i> Abrir 2 Ventanillas</div>
+            <div class="card-body">Medida de mayor impacto: reduce el tiempo de espera en un <strong style="color:var(--green)">47%</strong> y aumenta los pacientes atendidos en un <strong style="color:var(--green)">31%</strong>. Inversión mínima, resultado máximo.</div>
+        </div>
+        <div class="card accent-yellow">
+            <div class="card-title"><i class="fa-solid fa-ticket" style="color:var(--yellow)"></i> Aumentar Fichas de MG</div>
+            <div class="card-body">Medicina General concentra la mayor demanda. Incrementar de <strong style="color:var(--yellow)">24 a 40 fichas</strong> diarias reduciría la pérdida de pacientes en esa especialidad.</div>
+        </div>
+        <div class="card accent-blue">
+            <div class="card-title"><i class="fa-solid fa-calendar-check" style="color:var(--blue-lt)"></i> Implementar Cita Previa</div>
+            <div class="card-body">Distribuir el flujo de llegadas mediante turnos digitales evitaría la concentración matutina y haría el proceso predecible, mejorando la experiencia del paciente.</div>
+        </div>
+        <div class="card accent-purple">
+            <div class="card-title"><i class="fa-solid fa-chart-line" style="color:var(--purple)"></i> Monitoreo Continuo</div>
+            <div class="card-body">Usar el dashboard desarrollado para monitorear indicadores en tiempo real y <strong style="color:var(--purple)">ajustar parámetros dinámicamente</strong> ante cambios en la demanda.</div>
+        </div>
+    </div>
+</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 12 — FINAL
+     ================================================================ -->
+<section data-background-color="#060d1a">
+<div class="s" style="gap:0.8rem">
+    <div style="font-size:3.5rem;line-height:1">🏥</div>
+    <div class="cover-title" style="font-size:clamp(2rem,5vw,4rem)">
+        <span class="grad-text">¡Gracias!</span>
+    </div>
+    <div class="slide-sub">
+        Sistema de Simulación para la Optimización de la<br>
+        Asignación de Fichas en el Policlínico 32 de la CNS
+    </div>
+
+    <!-- Divider ornament -->
+    <div style="display:flex;align-items:center;gap:0.8rem;width:100%;max-width:480px">
+        <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--border-h))"></div>
+        <i class="fa-solid fa-hospital" style="color:var(--text-3);font-size:0.8rem"></i>
+        <div style="flex:1;height:1px;background:linear-gradient(90deg,var(--border-h),transparent)"></div>
+    </div>
+
+    <!-- Authors -->
+    <div style="display:flex;gap:2rem;flex-wrap:wrap;justify-content:center">
+        <div style="text-align:center">
+            <div style="font-size:0.78rem;font-weight:700;color:var(--blue-lt)">Gunnar Ludwing Pecho Vallejos</div>
+            <div style="font-size:0.6rem;color:var(--text-3)">Estudiante · Ingeniería de Sistemas</div>
+        </div>
+        <div style="width:1px;background:var(--border)"></div>
+        <div style="text-align:center">
+            <div style="font-size:0.78rem;font-weight:700;color:var(--blue-lt)">Alexander Jhoel Rodriguez Mejia</div>
+            <div style="font-size:0.6rem;color:var(--text-3)">Estudiante · Ingeniería de Sistemas</div>
+        </div>
+    </div>
+
+    <div style="font-size:0.62rem;color:var(--text-3)">
+        Universidad Latinoamericana ULAT · SIS 703 · 2026 · Cochabamba, Bolivia
+    </div>
+
+    <div style="display:flex;gap:0.6rem;flex-wrap:wrap;justify-content:center;margin-top:0.2rem">
+        <div class="tech-pill"><i class="fa-brands fa-python" style="color:#f7d24f"></i> Python</div>
+        <div class="tech-pill"><i class="fa-solid fa-cube" style="color:#22c55e"></i> Panda3D</div>
+        <div class="tech-pill"><i class="fa-brands fa-php" style="color:#7c7fc4"></i> PHP</div>
+        <div class="tech-pill"><i class="fa-brands fa-js" style="color:#f7d24f"></i> JS</div>
+        <div class="tech-pill"><i class="fa-solid fa-database" style="color:#60a5fa"></i> MySQL</div>
+    </div>
+</div>
+</section>
+
+</div><!-- /slides -->
+</div><!-- /reveal -->
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<script>
+// ============================================================
+// REVEAL INIT
+// ============================================================
+Reveal.initialize({
+    controls: true,
+    controlsLayout: 'edges',
+    progress: false,          // we use our own progress bar
+    slideNumber: false,       // we use our own counter
+    hash: true,
+    center: true,
+    transition: 'slide',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'none',
+    touch: true,
+    keyboard: true,
+    width: 1366,
+    height: 768,
+    margin: 0.02,
+    minScale: 0.15,
+    maxScale: 2.0,
+    disableLayout: false,
+});
+
+// ============================================================
+// PROGRESS BAR + SLIDE NUMBER
+// ============================================================
+function updateProgress() {
+    const total   = Reveal.getTotalSlides();
+    const current = Reveal.getIndices().h + 1;
+    document.getElementById('pbar').style.width = (current / total * 100) + '%';
+    document.getElementById('slide-num').textContent = current + ' / ' + total;
+}
+Reveal.on('slidechanged', updateProgress);
+Reveal.on('ready', updateProgress);
+
+// ============================================================
+// GSAP CARD ANIMATIONS
+// ============================================================
+Reveal.on('slidechanged', function(e) {
+    const cards = e.currentSlide.querySelectorAll('.card');
+    if (cards.length) {
+        gsap.fromTo(cards, {
+            opacity: 0, y: 18, scale: 0.96
+        }, {
+            opacity: 1, y: 0, scale: 1,
+            duration: 0.45,
+            stagger: 0.07,
+            ease: 'power2.out'
+        });
+    }
+    // Animate eyebrow + title
+    const eyebrow = e.currentSlide.querySelector('.slide-eyebrow');
+    const title   = e.currentSlide.querySelector('.slide-title');
+    if (eyebrow) gsap.fromTo(eyebrow, { opacity:0, y:-10 }, { opacity:1, y:0, duration:0.4, ease:'power2.out' });
+    if (title)   gsap.fromTo(title,   { opacity:0, y:-8  }, { opacity:1, y:0, duration:0.45, delay:0.05, ease:'power2.out' });
+
+    // Animate cover title
+    const coverTitle = e.currentSlide.querySelector('.cover-title');
+    if (coverTitle) {
+        gsap.fromTo(coverTitle, { opacity:0, y:20 }, { opacity:1, y:0, duration:0.6, ease:'power3.out' });
+    }
+});
+
+// ============================================================
+// CHART.JS — COMPARATIVE CHART
+// ============================================================
+let chartInited = false;
+
+function initChart() {
+    if (chartInited) return;
+    const canvas = document.getElementById('comparativeChart');
+    if (!canvas) return;
+    chartInited = true;
+
+    new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels: ['Pacientes\nAtendidos', 'Sin Ficha', 'Espera Prom.\n(minutos)', 'Utilización\nventanilla (%)'],
+            datasets: [
+                {
+                    label: 'Base (1 ventanilla)',
+                    data: [55, 25, 72.9, 92.4],
+                    backgroundColor: 'rgba(59,130,246,0.25)',
+                    borderColor: '#3b82f6',
+                    borderWidth: 2,
+                    borderRadius: 5,
+                    borderSkipped: false,
+                },
+                {
+                    label: 'Con Fallas',
+                    data: [51, 28, 85.4, 94.1],
+                    backgroundColor: 'rgba(248,113,113,0.25)',
+                    borderColor: '#f87171',
+                    borderWidth: 2,
+                    borderRadius: 5,
+                    borderSkipped: false,
+                },
+                {
+                    label: '2 Ventanillas',
+                    data: [72, 8, 38.7, 78.2],
+                    backgroundColor: 'rgba(52,211,153,0.25)',
+                    borderColor: '#34d399',
+                    borderWidth: 2,
+                    borderRadius: 5,
+                    borderSkipped: false,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#94a3b8',
+                        font: { size: 10, family: 'Inter', weight: '600' },
+                        boxWidth: 12,
+                        padding: 14,
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(13,26,45,0.95)',
+                    borderColor: 'rgba(255,255,255,0.08)',
+                    borderWidth: 1,
+                    titleColor: '#f1f5f9',
+                    bodyColor: '#94a3b8',
+                    titleFont: { family: 'Space Grotesk', weight: '600' },
+                    bodyFont: { family: 'Inter', size: 11 },
+                    padding: 10,
+                    cornerRadius: 8,
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: { color: '#475569', font: { size: 9 }, maxTicksLimit: 6 },
+                    border: { color: 'rgba(255,255,255,0.05)' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#475569', font: { size: 9 } },
+                    border: { color: 'rgba(255,255,255,0.05)' }
+                }
+            },
+            animation: { duration: 900, easing: 'easeOutQuart' }
+        }
+    });
+}
+
+Reveal.on('slidechanged', function(e) {
+    // Slide index 6 (0-based) = slide 7 (the chart slide)
+    if (e.indexh === 6) {
+        setTimeout(initChart, 100);
+    }
+});
+
+// ============================================================
+// KEYBOARD OVERRIDE (arrows + space)
+// ============================================================
+document.addEventListener('keydown', function(e) {
+    if (['ArrowRight', 'ArrowDown', ' '].includes(e.key)) {
+        e.preventDefault();
+        Reveal.next();
+    } else if (['ArrowLeft', 'ArrowUp'].includes(e.key)) {
+        e.preventDefault();
+        Reveal.prev();
+    }
+});
+</script>
+</body>
+</html>
